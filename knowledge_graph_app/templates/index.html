@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Graph - Transportation Network</title>
+
+    <!-- Vis.js for graph visualization -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        #graph-container {
+            height: 600px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .query-results {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .query-results h3 {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .relationship-item {
+            background: white;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 3px;
+            font-size: 13px;
+            border-left: 3px solid #667eea;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .file-upload-wrapper {
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .legend {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Transportation Network Knowledge Graph</h1>
+            <p class="subtitle">M.Tech AIML - NLP Applications Assignment | Visualize and Query Entity Relationships</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Panel: Input Controls -->
+            <div class="panel">
+                <!-- Manual Input Section -->
+                <div class="section">
+                    <h2>Add Relationship</h2>
+                    <form id="add-form">
+                        <div class="input-group">
+                            <label for="entity1">Entity 1 (Source)</label>
+                            <input type="text" id="entity1" placeholder="e.g., Mumbai" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="relationship">Relationship</label>
+                            <input type="text" id="relationship" placeholder="e.g., connected_by_train" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="entity2">Entity 2 (Target)</label>
+                            <input type="text" id="entity2" placeholder="e.g., Delhi" required>
+                        </div>
+                        <button type="submit">Add to Graph</button>
+                    </form>
+                    <div id="add-message" class="message"></div>
+                </div>
+
+                <!-- CSV Upload Section -->
+                <div class="section">
+                    <h2>Bulk Upload (CSV)</h2>
+                    <form id="upload-form">
+                        <div class="input-group">
+                            <label for="csv-file">Choose CSV File</label>
+                            <input type="file" id="csv-file" accept=".csv" required>
+                        </div>
+                        <button type="submit">Upload CSV</button>
+                    </form>
+                    <div class="legend">
+                        CSV Format: entity1,relationship,entity2
+                    </div>
+                    <div id="upload-message" class="message"></div>
+                </div>
+
+                <!-- Query Section -->
+                <div class="section">
+                    <h2>Query Graph</h2>
+                    <form id="query-form">
+                        <div class="input-group">
+                            <label for="query-type">Query Type</label>
+                            <select id="query-type">
+                                <option value="neighbors">Find All Connections</option>
+                                <option value="all_relationships">List All Relationships</option>
+                                <option value="path">Find Path Between Entities</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="query-entity">Entity</label>
+                            <input type="text" id="query-entity" placeholder="e.g., Mumbai" required>
+                        </div>
+                        <div class="input-group" id="target-group" style="display: none;">
+                            <label for="target-entity">Target Entity</label>
+                            <input type="text" id="target-entity" placeholder="e.g., Delhi">
+                        </div>
+                        <button type="submit">Execute Query</button>
+                    </form>
+                    <div id="query-message" class="message"></div>
+                    <div id="query-results" class="query-results" style="display: none;"></div>
+                </div>
+
+                <!-- Statistics Section -->
+                <div class="section">
+                    <h2>Graph Statistics</h2>
+                    <div class="stats">
+                        <div class="stat-box">
+                            <div class="stat-value" id="node-count">0</div>
+                            <div class="stat-label">Entities (Nodes)</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="edge-count">0</div>
+                            <div class="stat-label">Relationships (Edges)</div>
+                        </div>
+                    </div>
+                    <button onclick="refreshGraph()" style="margin-top: 15px;">Refresh Graph</button>
+                    <button onclick="clearGraph()" class="btn-danger">Clear All Data</button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Graph Visualization -->
+            <div class="panel">
+                <h2>Graph Visualization</h2>
+                <div id="graph-container"></div>
+                <div id="loading" class="loading">Loading graph...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let network = null;
+        const API_BASE = '';
+
+        // Initialize graph visualization
+        function initGraph() {
+            const container = document.getElementById('graph-container');
+            const data = {
+                nodes: new vis.DataSet([]),
+                edges: new vis.DataSet([])
+            };
+
+            const options = {
+                nodes: {
+                    shape: 'dot',
+                    size: 20,
+                    font: {
+                        size: 14,
+                        color: '#333'
+                    },
+                    borderWidth: 2,
+                    color: {
+                        border: '#667eea',
+                        background: '#ffffff',
+                        highlight: {
+                            border: '#764ba2',
+                            background: '#f0f0f0'
+                        }
+                    }
+                },
+                edges: {
+                    width: 2,
+                    color: {
+                        color: '#848484',
+                        highlight: '#667eea'
+                    },
+                    arrows: {
+                        to: {
+                            enabled: true,
+                            scaleFactor: 1
+                        }
+                    },
+                    font: {
+                        size: 12,
+                        align: 'middle',
+                        background: 'white'
+                    },
+                    smooth: {
+                        type: 'continuous'
+                    }
+                },
+                physics: {
+                    enabled: true,
+                    barnesHut: {
+                        gravitationalConstant: -2000,
+                        springConstant: 0.04,
+                        springLength: 150
+                    },
+                    stabilization: {
+                        iterations: 150
+                    }
+                },
+                interaction: {
+                    hover: true,
+                    tooltipDelay: 100,
+                    navigationButtons: true,
+                    keyboard: true
+                }
+            };
+
+            network = new vis.Network(container, data, options);
+        }
+
+        // Load and display graph
+        async function loadGraph() {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE}/api/graph`);
+                const data = await response.json();
+
+                if (data.success) {
+                    network.setData({
+                        nodes: new vis.DataSet(data.graph.nodes),
+                        edges: new vis.DataSet(data.graph.edges)
+                    });
+
+                    // Update stats
+                    document.getElementById('node-count').textContent = data.stats.node_count;
+                    document.getElementById('edge-count').textContent = data.stats.edge_count;
+                }
+            } catch (error) {
+                console.error('Error loading graph:', error);
+            }
+            showLoading(false);
+        }
+
+        // Add relationship
+        document.getElementById('add-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const entity1 = document.getElementById('entity1').value.trim();
+            const relationship = document.getElementById('relationship').value.trim();
+            const entity2 = document.getElementById('entity2').value.trim();
+
+            try {
+                const response = await fetch(`${API_BASE}/api/add_relationship`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ entity1, relationship, entity2 })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('add-message', data.message, 'success');
+                    document.getElementById('add-form').reset();
+                    await loadGraph();
+                } else {
+                    showMessage('add-message', data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('add-message', 'Error adding relationship: ' + error.message, 'error');
+            }
+        });
+
+        // Upload CSV
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('csv-file');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showMessage('upload-message', 'Please select a file', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_BASE}/api/upload_csv`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    let message = data.message;
+                    if (data.warnings && data.warnings.length > 0) {
+                        message += '\n\nWarnings:\n' + data.warnings.join('\n');
+                    }
+                    showMessage('upload-message', message, 'success');
+                    document.getElementById('upload-form').reset();
+                    await loadGraph();
+                } else {
+                    showMessage('upload-message', data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('upload-message', 'Error uploading file: ' + error.message, 'error');
+            }
+        });
+
+        // Query graph
+        document.getElementById('query-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const queryType = document.getElementById('query-type').value;
+            const entity = document.getElementById('query-entity').value.trim();
+            const target = document.getElementById('target-entity').value.trim();
+
+            const queryData = {
+                query_type: queryType,
+                entity: entity
+            };
+
+            if (queryType === 'path') {
+                if (!target) {
+                    showMessage('query-message', 'Target entity is required for path query', 'error');
+                    return;
+                }
+                queryData.target = target;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/query`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(queryData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayQueryResults(data.results, queryType);
+                    showMessage('query-message', 'Query executed successfully', 'success');
+                } else {
+                    showMessage('query-message', data.message, 'error');
+                    document.getElementById('query-results').style.display = 'none';
+                }
+            } catch (error) {
+                showMessage('query-message', 'Error executing query: ' + error.message, 'error');
+            }
+        });
+
+        // Display query results
+        function displayQueryResults(results, queryType) {
+            const resultsDiv = document.getElementById('query-results');
+            let html = '';
+
+            if (queryType === 'neighbors') {
+                html += `<h3>Connections for: ${results.entity}</h3>`;
+                html += `<p><strong>Total Connections:</strong> ${results.total_connections}</p>`;
+
+                if (results.outgoing_relationships.length > 0) {
+                    html += '<h4>Outgoing Relationships:</h4>';
+                    results.outgoing_relationships.forEach(rel => {
+                        html += `<div class="relationship-item">${results.entity} --[${rel.relationship}]--> ${rel.entity}</div>`;
+                    });
+                }
+
+                if (results.incoming_relationships.length > 0) {
+                    html += '<h4>Incoming Relationships:</h4>';
+                    results.incoming_relationships.forEach(rel => {
+                        html += `<div class="relationship-item">${rel.entity} --[${rel.relationship}]--> ${results.entity}</div>`;
+                    });
+                }
+            } else if (queryType === 'all_relationships') {
+                html += `<h3>All Relationships for: ${results.entity}</h3>`;
+                html += `<p><strong>Total:</strong> ${results.count}</p>`;
+
+                results.relationships.forEach(rel => {
+                    html += `<div class="relationship-item">${rel.entity1} --[${rel.relationship}]--> ${rel.entity2}</div>`;
+                });
+            } else if (queryType === 'path') {
+                if (results.path) {
+                    html += `<h3>Path from ${results.source} to ${results.target}</h3>`;
+                    html += `<p><strong>Path Length:</strong> ${results.path_length}</p>`;
+                    html += `<p><strong>Path:</strong> ${results.path.join(' → ')}</p>`;
+                    html += '<h4>Path Details:</h4>';
+
+                    results.path_details.forEach(step => {
+                        html += `<div class="relationship-item">${step.from} --[${step.relationship}]--> ${step.to}</div>`;
+                    });
+                } else {
+                    html += `<p>${results.message}</p>`;
+                }
+            }
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.style.display = 'block';
+        }
+
+        // Show/hide target entity field based on query type
+        document.getElementById('query-type').addEventListener('change', (e) => {
+            const targetGroup = document.getElementById('target-group');
+            targetGroup.style.display = e.target.value === 'path' ? 'block' : 'none';
+        });
+
+        // Refresh graph
+        async function refreshGraph() {
+            await loadGraph();
+        }
+
+        // Clear graph
+        async function clearGraph() {
+            if (!confirm('Are you sure you want to clear all graph data?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/clear_graph`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Graph cleared successfully');
+                    await loadGraph();
+                } else {
+                    alert('Error clearing graph: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error clearing graph: ' + error.message);
+            }
+        }
+
+        // Show message
+        function showMessage(elementId, message, type) {
+            const messageDiv = document.getElementById(elementId);
+            messageDiv.textContent = message;
+            messageDiv.className = `message ${type} show`;
+
+            setTimeout(() => {
+                messageDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        // Show loading
+        function showLoading(show) {
+            const loadingDiv = document.getElementById('loading');
+            loadingDiv.className = show ? 'loading show' : 'loading';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initGraph();
+            loadGraph();
+        });
+    </script>
+</body>
+</html>

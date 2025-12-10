@@ -1,0 +1,45 @@
+entity1,relationship,entity2
+Mumbai,connected_by_train,Delhi
+Delhi,connected_by_train,Mumbai
+Mumbai,connected_by_flight,Bangalore
+Bangalore,connected_by_flight,Mumbai
+Delhi,connected_by_flight,Bangalore
+Bangalore,connected_by_flight,Delhi
+Mumbai,has_station,CST Station
+Mumbai,has_station,Mumbai Central
+Delhi,has_station,New Delhi Railway Station
+Delhi,has_station,Old Delhi Railway Station
+Bangalore,has_station,Bangalore City Junction
+Mumbai,has_airport,Chhatrapati Shivaji Airport
+Delhi,has_airport,Indira Gandhi International Airport
+Bangalore,has_airport,Kempegowda International Airport
+CST Station,serves,Local Train
+CST Station,serves,Express Train
+Mumbai Central,serves,Express Train
+New Delhi Railway Station,serves,Metro
+New Delhi Railway Station,serves,Express Train
+Bangalore City Junction,serves,Metro
+Bangalore City Junction,serves,Express Train
+Chhatrapati Shivaji Airport,serves,Domestic Flight
+Chhatrapati Shivaji Airport,serves,International Flight
+Indira Gandhi International Airport,serves,Domestic Flight
+Indira Gandhi International Airport,serves,International Flight
+Kempegowda International Airport,serves,Domestic Flight
+Kempegowda International Airport,serves,International Flight
+Mumbai,connected_by_bus,Pune
+Pune,connected_by_bus,Mumbai
+Delhi,connected_by_bus,Agra
+Agra,connected_by_bus,Delhi
+Bangalore,connected_by_bus,Mysore
+Mysore,connected_by_bus,Bangalore
+Pune,has_station,Pune Junction
+Agra,has_station,Agra Cantonment
+Mysore,has_station,Mysore Junction
+Delhi,connected_by_metro,Noida
+Noida,connected_by_metro,Delhi
+Delhi,connected_by_metro,Gurgaon
+Gurgaon,connected_by_metro,Delhi
+Mumbai,connected_by_metro,Navi Mumbai
+Navi Mumbai,connected_by_metro,Mumbai
+Bangalore,connected_by_metro,Whitefield
+Whitefield,connected_by_metro,Bangalore
